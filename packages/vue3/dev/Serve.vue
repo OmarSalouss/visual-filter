@@ -7,7 +7,7 @@ import {
   saveTemplateJson,
   loadTemplateJson,
   listTemplates
-} from "@visual-filter/common/src/index"
+} from "@visual-filter/common"
 
 export default {
   name: "Serve",
@@ -29,6 +29,11 @@ export default {
             name: "Grade",
             type: "numeric",
             values: [3.72, 3.52, 3.4],
+          },
+          {
+            name: "Date",
+            type: "date",
+            values: ["2025-10-13", "2025-12-02", "2026-06-06"],
           },
         ],
         methods: {
@@ -55,6 +60,27 @@ export default {
             },
             endsWith(cellValue, argument) {
               return cellValue.endsWith(argument)
+            },
+          },
+          date: {
+            before(cellValue, argument) {
+              console.log(`argument = ${argument} `)
+              return new Date(cellValue) < new Date(argument);
+            },
+            after(cellValue, argument) {
+              console.log(`argument = ${argument} `)
+              return new Date(cellValue) > new Date(argument);
+            },
+            between(cellValue, argument1, argument2) {
+              const cell = new Date(cellValue)
+              const start = new Date(argument1);
+              const end = new Date(argument2);
+
+              if (isNaN(cell.getTime()) || isNaN(start.getTime()) || isNaN(end.getTime())) {
+                console.log("Invalid date value in 'between'");
+              }
+
+              return cell >= start && cell <= end;
             },
           },
         },
@@ -103,6 +129,7 @@ export default {
       }
 
       this.currentFilter = ctx.filter
+      console.log(ctx)
     },
     
     saveFilter() {

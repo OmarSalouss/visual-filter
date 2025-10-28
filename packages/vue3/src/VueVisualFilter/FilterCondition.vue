@@ -24,11 +24,18 @@ export default {
       type: Array,
       required: true,
     },
+    dateMethodNames: {
+      type: Array,
+      required: true,
+    },
   },
   computed: {
     isNumeric() {
       return this.condition.dataType === DataType.NUMERIC
     },
+    isNominal() {
+      return this.condition.dataType === DataType.NOMINAL
+    }
   },
   methods: {
     updateField(newFieldName) {
@@ -37,6 +44,14 @@ export default {
       }
     },
   },
+  watch: {
+    'condition.method'(newMethod) {
+      if (newMethod === 'between') {
+        if (!this.condition.argument1) this.condition.argument1 = '';
+        if (!this.condition.argument2) this.condition.argument2 = '';
+      }
+    }
+  }
 }
 </script>
 
@@ -57,13 +72,14 @@ export default {
       name="methodUpdation"
       v-bind="{
         numericMethodNames: isNumeric && numericMethodNames,
-        nominalMethodNames: isNumeric || nominalMethodNames,
+        nominalMethodNames: isNominal && nominalMethodNames,
+        dateMethodNames: !isNominal && !isNumeric && dateMethodNames,
         condition,
       }"
     >
       <select v-model="condition.method" data-testId="method-select">
         <option
-          v-for="method in isNumeric ? numericMethodNames : nominalMethodNames"
+          v-for="method in isNumeric ? numericMethodNames : isNominal ? nominalMethodNames : dateMethodNames"
           :key="method"
           :value="method"
         >
@@ -72,12 +88,40 @@ export default {
       </select>
     </slot>
     <slot name="argumentUpdation" :condition="condition">
-      <input
-        type="text"
-        v-model="condition.argument"
-        data-testId="argument-input"
-      />
+      <template v-if="condition.method === 'between'">
+        <label>
+          From:
+          <input
+            type="date"
+            v-model="condition.argument1"
+            placeholder="From"
+            data-testId="argument1-input"
+          />
+        </label>
+
+        <label>
+          To:
+          <input
+            type="date"
+            v-model="condition.argument2"
+            placeholder="To"
+            data-testId="argument2-input"
+          />
+        </label>
+      </template>
+
+      <template v-else>
+      <label>
+        Value:
+        <input
+          :type="isNominal ? 'text' : isNumeric ? 'number' : 'date'"
+          v-model="condition.argument"
+          data-testId="argument-input"
+        />
+      </label>
+      </template>
     </slot>
+
     <slot
       name="conditionDeletion"
       :deleteCondition="() => $emit('deleteCondition', condition)"
@@ -130,6 +174,11 @@ export default {
   button[data-testId="remove-condition-button"]:active {
     transform: scale(0.92);
   }
+
+  label {
+    color: #007bff
+  }
+
 
   /* Responsive */
   @media (max-width: 600px) {
