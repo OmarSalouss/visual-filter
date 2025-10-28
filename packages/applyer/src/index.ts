@@ -1,22 +1,34 @@
 import { FilterType, GroupType } from "@visual-filter/common"
 
 export = function applyFilter(filter: any, methods: any, data: any) {
+  const require_two_argument = ["between"];
+
   function buildPremiseTree(filter: any) {
     if (filter.type === FilterType.CONDITION) {
       return data
         .find((field: any) => field.name === filter.fieldName)
         .values.map((value: any) => {
           try {
-            return methods[filter.dataType][filter.method](
-              value,
-              filter.argument,
-            )
-          } catch {
+            if (require_two_argument.includes(filter.method)) {
+              // now its for "between" method, pass cellValue + two arguments (argument1 & argument2)
+              return methods[filter.dataType][filter.method](
+                value,
+                filter.argument1,
+                filter.argument2,
+              )
+            } else {
+              // for all other methods, pass cellValue + single argument
+              return methods[filter.dataType][filter.method](
+                value,
+                filter.argument,
+              )
+            }
+          } catch (error) {
             return false
           }
         })
     }
-    return filter.filters.map(buildPremiseTree)
+    return filter.filters.map((f: any) => buildPremiseTree(f))
   }
 
   function shouldntDeleteRow(rowIndex: any, premises: any, group: any) {
