@@ -66,3 +66,77 @@ export default {
     </div>
   </div>
 </template>
+
+<style scoped>
+  .space-y-4 {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .space-x-2 {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  select {
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    background: #fff;
+    transition: border-color 0.2s;
+  }
+
+  select:focus {
+    outline: none;
+    border-color: #007bff;
+  }
+
+  button[data-testId="remove-group-button"] {
+    background-color: #dc3545;
+    color: #fff;
+    border: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s ease;
+  }
+
+  button[data-testId="remove-group-button"]:hover {
+    background-color: #b02a37;
+  }
+
+  button[data-testId="remove-group-button"]:active {
+    transform: scale(0.92);
+  }
+
+  .ml-10 {
+    margin-left: 30px;
+  }
+
+  .space-y-1 {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .space-x-2 {
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    select {
+      width: 100%;
+    }
+
+    .ml-10 {
+      margin-left: 12px;
+    }
+  }
+</style>

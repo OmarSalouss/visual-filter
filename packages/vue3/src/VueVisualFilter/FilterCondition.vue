@@ -86,3 +86,61 @@ export default {
     </slot>
   </div>
 </template>
+
+<style scoped>
+  .space-x-2 {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  select,
+  input[type="text"] {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background: #fff;
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+  }
+
+  select:focus,
+  input[type="text"]:focus {
+    outline: none;
+    border-color: #007bff;
+  }
+
+  button[data-testId="remove-condition-button"] {
+    background-color: #dc3545;
+    color: #fff;
+    border: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.15s ease;
+  }
+
+  button[data-testId="remove-condition-button"]:hover {
+    background-color: #b02a37;
+  }
+
+  button[data-testId="remove-condition-button"]:active {
+    transform: scale(0.92);
+  }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .space-x-2 {
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    select,
+    input[type="text"] {
+      width: 100%;
+    }
+  }
+</style>

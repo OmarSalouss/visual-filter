@@ -11,9 +11,18 @@ import applyFilter from "@visual-filter/applyer"
 import FilterGroup from "./FilterGroup.vue"
 import FilterCondition from "./FilterCondition.vue"
 
+// If we add a short delay when typing in fields, it will prevent updates on every key event.
+function debounce(func, wait) {
+  let timeout
+  return function(...args) {
+    clearTimeout(timeout)
+    timeout = setTimeout(() => func.apply(this, args), wait)
+  }
+}
+
 export default {
   name: "VueVisualFilter",
-  emits: ["filterUpdate"],
+  emits: ["filterUpdate", "beforeChange"],
   props: {
     filteringOptions: {
       type: Object,
@@ -67,17 +76,14 @@ export default {
   watch: {
     filter: {
       deep: true,
-      handler() {
+      handler: debounce(function() {
+        // only emit every 300ms, not on every key click
         this.$emit("filterUpdate", {
           filter: deepCopy(this.filter),
-          data: applyFilter(
-            this.filter,
-            this.filteringOptions.methods,
-            deepCopy(this.filteringOptions.data),
-          ),
+          data: applyFilter(this.filter, this.filteringOptions.methods, deepCopy(this.filteringOptions.data)),
         })
-      },
-    },
+      }, 300)
+    }
   },
   methods: {
     updateConditionField(condition, newFieldName) {
@@ -94,9 +100,15 @@ export default {
             : this.nominalMethodNames[0]) || ""
         condition.argument = newSampleValue
         condition.dataType = newType
+      } else {
+        condition.argument = newSampleValue // same type, then update the sample value
       }
     },
     addFilter(filters, newFilterType) {
+      this.$emit("beforeChange", {
+        action: "beforeAdd",
+        currentFilter: deepCopy(this.filter),
+      })
       if (newFilterType === FilterType.GROUP) {
         filters.push({
           type: FilterType.GROUP,
@@ -123,6 +135,10 @@ export default {
       }
     },
     deleteFilter(filterToDelete) {
+      this.$emit("beforeChange", {
+        action: "beforeDelete",
+        currentFilter: deepCopy(this.filter),
+      })
       function recursiveDeletion(filter, index, filters) {
         if (filter === filterToDelete) {
           filters.splice(index, 1)
