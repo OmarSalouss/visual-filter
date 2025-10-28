@@ -380,6 +380,7 @@ export default {
     border-radius: 6px;
     cursor: pointer;
     transition: 0.2s;
+    width: 100%;
   }
 
   button:hover {

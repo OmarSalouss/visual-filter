@@ -90,7 +90,6 @@ export default {
     <slot name="argumentUpdation" :condition="condition">
       <template v-if="condition.method === 'between'">
         <label>
-          From:
           <input
             type="date"
             v-model="condition.argument1"
@@ -100,7 +99,10 @@ export default {
         </label>
 
         <label>
-          To:
+          AND
+        </label>
+
+        <label>
           <input
             type="date"
             v-model="condition.argument2"
