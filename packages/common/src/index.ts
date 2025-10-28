@@ -67,7 +67,7 @@ export function saveTemplateJson(src: any, templateId: string): boolean {
   const existsFilter = templates.some((t: any) => deepEqual(t.filter, src));
 
     if (existsFilter) {
-        alert(`❤️ Template with filters "${templateId}" already exists.`)
+        alert(`⚠️ Template with filters "${templateId}" already exists.`)
         return false;
     }
 
@@ -92,7 +92,6 @@ export function loadTemplateJson (templateId: string): any{
     const stored = localStorage.getItem(STORAGE_KEY)
     const templates = stored ? JSON.parse(stored) : []
     if(!templates.length){
-        // alert("Unforunality, there are no saved tempalte yet")
         return { success: false, template: null }
     }
     const foundTemplate = templates.find((temp: any) => temp.id === templateId)    
@@ -112,7 +111,6 @@ export function listTemplates (): any{
     const stored = localStorage.getItem(STORAGE_KEY)
     const templates = stored ? JSON.parse(stored) : []
     if(!templates.length){
-        // alert("Unforunality, there are no saved tempalte yet")
         return { success: true, template: null }
     }
     
