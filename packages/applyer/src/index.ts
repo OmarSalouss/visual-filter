@@ -1,28 +1,26 @@
 import { FilterType, GroupType } from "@visual-filter/common"
 
 export = function applyFilter(filter: any, methods: any, data: any) {
-  const require_two_argument = ["between"];
-
   function buildPremiseTree(filter: any) {
     if (filter.type === FilterType.CONDITION) {
       return data
         .find((field: any) => field.name === filter.fieldName)
         .values.map((value: any) => {
           try {
-            if (require_two_argument.includes(filter.method)) {
-              // now its for "between" method, pass cellValue + two arguments (argument1 & argument2)
-              return methods[filter.dataType][filter.method](
-                value,
-                filter.argument1,
-                filter.argument2,
-              )
-            } else {
-              // for all other methods, pass cellValue + single argument
-              return methods[filter.dataType][filter.method](
-                value,
-                filter.argument,
-              )
+            const method = methods[filter.dataType][filter.method]
+            
+            if(!method || typeof method.fn !== "function") return false
+
+            const args = []
+
+            for (let i = 0 ; i < method.argsNumber ; i++) {
+              const argName = method.argsNames[i]
+              if(argName && filter[argName] !== undefined) {
+                args.push(filter[argName])
+              }
             }
+
+            return method.fn(value, ...args)
           } catch (error) {
             return false
           }

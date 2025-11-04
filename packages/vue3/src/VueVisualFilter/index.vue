@@ -29,6 +29,12 @@ export default {
       required: true,
       validator(value) {
         try {
+          const isAllFnsValid = Object.values(value.methods).every((methodGroup) =>
+            Object.values(methodGroup).every(
+              (method) => typeof method.fn === "function"
+            )
+          );
+          
           return (
             value.data.length &&
             value.data.every(
@@ -39,13 +45,7 @@ export default {
                 (index > 0
                   ? field.values.length === fields[index - 1].values.length
                   : true),
-            ) &&
-            Object.values(value.methods.numeric).every(
-              (method) => typeof method === "function",
-            ) &&
-            Object.values(value.methods.nominal).every(
-              (method) => typeof method === "function",
-            )
+            ) && isAllFnsValid
           )
         } catch {
           return false
@@ -66,14 +66,14 @@ export default {
     fieldNames() {
       return this.filteringOptions.data.map((field) => field.name)
     },
-    numericMethodNames() {
-      return Object.keys(this.filteringOptions.methods.numeric)
-    },
-    nominalMethodNames() {
-      return Object.keys(this.filteringOptions.methods.nominal)
-    },
-    dateMethodNames() {
-      return Object.keys(this.filteringOptions.methods.date)
+    methodNamesByType() {
+      const methods = this.filteringOptions?.methods || {}
+      const result = {}
+      
+      for (const type in methods) {
+        result[type.toLowerCase()] = Object.keys(methods[type])
+      }
+      return result
     },
   },
   watch: {
@@ -97,12 +97,8 @@ export default {
         (field) => field.name === newFieldName,
       )
       if (condition.dataType !== newType) {
-        condition.method =
-          (newType === DataType.NUMERIC
-            ? this.numericMethodNames[0]
-            : (newType === DataType.NOMINAL)
-              ? this.nominalMethodNames[0]
-              : this.dateMethodNames[0]) || ""
+        const methodsForType = this.methodNamesByType[newType.toLowerCase()] || []
+        condition.method = methodsForType[0]
         condition.argument = newSampleValue
         condition.dataType = newType
       } else {
@@ -126,17 +122,12 @@ export default {
           type,
           values: [sampleValue = ""],
         } = this.filteringOptions.data[0]
-
+        const methodsForType = this.methodNamesByType[type.toLowerCase()] || []
         filters.push({
           type: FilterType.CONDITION,
           fieldName: name,
           dataType: type,
-          method:
-            (type === DataType.NUMERIC
-              ? this.numericMethodNames[0]
-              : type === DataType.NOMINAL
-                ? this.nominalMethodNames[0]
-                : this.dateMethodNames[0]) || "",
+          method: methodsForType[0],
           argument: sampleValue,
         })
       }
@@ -185,9 +176,8 @@ export default {
           {
             condition: filter,
             fieldNames: this.fieldNames,
-            numericMethodNames: this.numericMethodNames,
-            nominalMethodNames: this.nominalMethodNames,
-            dateMethodNames: this.dateMethodNames,
+            methodNamesByType: this.methodNamesByType,
+            methodsByType: this.filteringOptions.methods,
             onUpdateField: this.updateConditionField,
             onDeleteCondition: this.deleteFilter,
           },
