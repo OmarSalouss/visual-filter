@@ -16,20 +16,22 @@ export default {
       type: Array,
       required: true,
     },
-    numericMethodNames: {
-      type: Array,
+    methodNamesByType: {
+      type: Object,
       required: true,
     },
-    nominalMethodNames: {
-      type: Array,
-      required: true,
-    },
-    dateMethodNames: {
-      type: Array,
-      required: true,
+    methodsByType: { 
+      type: Object,
+      required: true
     },
   },
   computed: {
+    currentMethod() {
+      const dataType = this.condition.dataType?.toLowerCase()
+      const method = this.condition.method
+      if (!dataType || !method) return null
+      return this.methodsByType?.[dataType]?.[method] || null
+    },
     isNumeric() {
       return this.condition.dataType === DataType.NUMERIC
     },
@@ -46,10 +48,10 @@ export default {
   },
   watch: {
     'condition.method'(newMethod) {
-      if (newMethod === 'between') {
-        if (!this.condition.argument1) this.condition.argument1 = '';
-        if (!this.condition.argument2) this.condition.argument2 = '';
-      }
+      if (!this.currentMethod) return
+      this.currentMethod.argsNames.forEach(argName => {
+        if (!this.condition[argName]) this.condition[argName] = ''
+      })
     }
   }
 }
@@ -71,15 +73,13 @@ export default {
     <slot
       name="methodUpdation"
       v-bind="{
-        numericMethodNames: isNumeric && numericMethodNames,
-        nominalMethodNames: isNominal && nominalMethodNames,
-        dateMethodNames: !isNominal && !isNumeric && dateMethodNames,
+        methodNamesByType: methodNamesByType,
         condition,
       }"
     >
       <select v-model="condition.method" data-testId="method-select">
         <option
-          v-for="method in isNumeric ? numericMethodNames : isNominal ? nominalMethodNames : dateMethodNames"
+          v-for="method in methodNamesByType[condition.dataType.toLowerCase()]"
           :key="method"
           :value="method"
         >
@@ -88,41 +88,22 @@ export default {
       </select>
     </slot>
     <slot name="argumentUpdation" :condition="condition">
-      <template v-if="condition.method === 'between'">
+      <template v-for="argName in currentMethod?.argsNames" :key="argName">
         <label>
+          <span>{{ argName }}:</span>
           <input
-            type="date"
-            v-model="condition.argument1"
-            placeholder="From"
-            data-testId="argument1-input"
+            :type="isNominal ? 'text' : isNumeric ? 'number' : 'date'"
+            v-model="condition[argName]"
+            :placeholder="argName"
+            :data-testId="`${argName}-input`"
           />
         </label>
-
-        <label>
-          AND
-        </label>
-
-        <label>
-          <input
-            type="date"
-            v-model="condition.argument2"
-            placeholder="To"
-            data-testId="argument2-input"
-          />
-        </label>
-      </template>
-
-      <template v-else>
-      <label>
-        Value:
-        <input
-          :type="isNominal ? 'text' : isNumeric ? 'number' : 'date'"
-          v-model="condition.argument"
-          data-testId="argument-input"
-        />
-      </label>
+        <template v-if="argName !== currentMethod?.argsNames.slice(-1)[0]">
+          <label>AND</label>
+        </template>
       </template>
     </slot>
+
 
     <slot
       name="conditionDeletion"

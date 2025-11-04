@@ -38,52 +38,120 @@ export default {
         ],
         methods: {
           numeric: {
-            "="(cellValue, argument) {
-              return cellValue == argument
+            "=": {
+              argsNumber: 1,
+              argsNames: ['argument'],
+              fn(cellValue, argument) {
+                return cellValue == argument
+              }
             },
-            ">"(cellValue, argument) {
-              return cellValue > argument
+            ">": {
+              argsNumber: 1,
+              argsNames: ['argument'],
+              fn(cellValue, argument) {
+                return cellValue > argument
+              }
             },
-            "<"(cellValue, argument) {
-              return cellValue < argument
+            "<": {
+              argsNumber: 1,
+              argsNames: ['argument'],
+              fn(cellValue, argument) {
+                return cellValue < argument
+              }
             },
-            "!="(cellValue, argument) {
-              return cellValue != argument
-            },
+            "!=": {
+              argsNumber: 1,
+              argsNames: ['argument'],
+              fn(cellValue, argument) {
+                return cellValue != argument
+              }
+            }
           },
           nominal: {
-            contains(cellValue, argument) {
-              return cellValue.includes(argument)
+            contains: {
+              argsNumber: 1,
+              argsNames: ['argument'],
+              fn(cellValue, argument) {
+                return cellValue.includes(argument)
+              }
             },
-            startsWith(cellValue, argument) {
-              return cellValue.startsWith(argument)
+            startsWith: {
+              argsNumber: 1,
+              argsNames: ['argument'],
+              fn(cellValue, argument) {
+                return cellValue.startsWith(argument)
+              }
             },
-            endsWith(cellValue, argument) {
-              return cellValue.endsWith(argument)
-            },
+            endsWith: {
+              argsNumber: 1,
+              argsNames: ['argument'],
+              fn(cellValue, argument) {
+                return cellValue.endsWith(argument)
+              }
+            }
           },
           date: {
-            before(cellValue, argument) {
-              console.log(`argument = ${argument} `)
-              return new Date(cellValue) < new Date(argument);
-            },
-            after(cellValue, argument) {
-              console.log(`argument = ${argument} `)
-              return new Date(cellValue) > new Date(argument);
-            },
-            between(cellValue, argument1, argument2) {
-              const cell = new Date(cellValue)
-              const start = new Date(argument1);
-              const end = new Date(argument2);
-
-              if (isNaN(cell.getTime()) || isNaN(start.getTime()) || isNaN(end.getTime())) {
-                console.log("Invalid date value in 'between'");
+            before: {
+              argsNumber: 1,
+              argsNames: ['argument'],
+              fn(cellValue, argument) {
+                const cell = new Date(cellValue)
+                const arg = new Date(argument)
+                if (isNaN(cell.getTime()) || isNaN(arg.getTime())) return false
+                return cell < arg
               }
-
-              return cell >= start && cell <= end;
             },
-          },
-        },
+            after: {
+              argsNumber: 1,
+              argsNames: ['argument'],
+              fn(cellValue, argument) {
+                const cell = new Date(cellValue)
+                const arg = new Date(argument)
+                if (isNaN(cell.getTime()) || isNaN(arg.getTime())) return false
+                return cell > arg
+              }
+            },
+            isBetween: {
+              argsNumber: 2,
+              argsNames: ['startDate', 'endDate'],
+              fn(cellValue, startDate, endDate) {
+                const cellDate = new Date(cellValue)
+                const start = new Date(startDate)
+                const end = new Date(endDate)
+                if ([cellDate, start, end].some(d => isNaN(d))) return false
+                return cellDate >= start && cellDate <= end
+              }
+            },
+            isBetweenThreeDates: {
+              argsNumber: 3,
+              argsNames: ['startDate', 'middleDate', 'endDate'],
+              fn(cellValue, startDate, middleDate, endDate) {
+                const cellDate = new Date(cellValue)
+                const start = new Date(startDate)
+                const middle = new Date(middleDate)
+                const end = new Date(endDate)
+
+                if ([cellDate, start, middle, end].some(d => isNaN(d))) return false
+                return (cellDate >= start && cellDate <= middle) ||
+                      (cellDate >= middle && cellDate <= end)
+              }
+            },
+            isWithinMultipleRanges: {
+              argsNumber: 4,
+              argsNames: ['range1Start', 'range1End', 'range2Start', 'range2End'],
+              fn(cellValue, range1Start, range1End, range2Start, range2End) {
+                const cellDate = new Date(cellValue)
+                const r1Start = new Date(range1Start)
+                const r1End = new Date(range1End)
+                const r2Start = new Date(range2Start)
+                const r2End = new Date(range2End)
+                if ([cellDate, r1Start, r1End, r2Start, r2End].some(d => isNaN(d))) return false
+                return (cellDate >= r1Start && cellDate <= r1End) ||
+                      (cellDate >= r2Start && cellDate <= r2End)
+              }
+            }
+          }
+        }
       },
       currentFilter: null,
       undoHistory : [],
